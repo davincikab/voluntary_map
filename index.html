@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossorigin=""/>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.3.0/d3.min.js" integrity="sha512-NMhzM2RHzbCRO0s5VPaRC+2bW6nmNXimzC9p5sp2x19M+zzuSJ2T50dEQ7hpHkNjnX1mt8nQg1NNthwRZgsoIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        .map-wrapper {
+            max-width: 1080px;
+            margin: 0 auto;
+        }
+
+        select {
+            appearance: none;
+            background-color: #fff;
+            border: 1px solid #c4c4c4;
+            border-radius: 0;
+            color: #222221;
+            font-family: inherit;
+            font-size: inherit;
+            min-height: 52px;
+            width: 100%;
+            padding: 0.5rem;
+        }
+
+        select + select {
+            margin-left: 1rem;
+        }
+
+        .filter {
+            display: flex;
+            flex-wrap: no-wrap;
+            width: 100%;
+            padding: 0;
+            justify-content: space-between;
+        }
+
+        .filter .has-value {
+            background-color: #e2382a;
+            background-image: url(../assets/icons/chevron_dropdown-white-8e9b3105a4.svg);
+            border-color: #e2382a;
+            color: #fff;
+            background-repeat: no-repeat;
+            background-position: 98%;
+        }
+        select option {
+            text-transform: capitalize;
+        }
+
+        #map {
+            height: 80vh;
+            width: 100%;
+        }
+
+        /* custom marker styling */
+        .div-marker > div {
+            background-color: #e41a1c;
+            padding: 5px;
+            width: 25px;
+            height: 30px;
+            border-radius: 50% 30% 40% 30%;
+            box-shadow: 0 0 0.4em #222221;
+            mix-blend-mode: color;
+
+            font-weight: 700;
+            text-align: center;
+            color:white;
+        }
+
+        .div-marker > div.church-icon {
+            background-color: #ff7f00;
+            padding: 5px;
+            width: 25px;
+            height: 30px;
+            border-radius: 5%;
+            box-shadow: 0 0 0.4em #222221;
+            mix-blend-mode: color;
+            border-radius: 10% 10% 30% 30%;
+        }
+
+        .div-marker div.church-icon::after {
+            border: 8px solid #ff7f00;
+            border-color: #ff7f00 transparent transparent transparent;
+        }
+
+        .div-marker div::after {
+            position: absolute;
+            bottom: -31.5px;
+            left: 4.5px;
+            border: 8px solid #e41a1c;
+            content: " ";
+            border-color: #e41a1c transparent transparent transparent;
+            z-index: -1;
+            /* box-shadow: 0 0 0.4em #222221; */
+        }
+
+        .marker-cluster {
+            width: auto;
+            height: auto;   
+            border:none;
+            background-color: transparent;
+        }
+
+        .cluster-marker {
+            width: 30px;
+            height: 30px;
+            border-radius: 20% 30% 40% 50%;
+            background-color: #5197F4;
+            text-align: center;
+            box-shadow: 0px 0px 0.8rem #5197F4;
+            color:white;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* popup-stylin */
+        .leaflet-popup-content h2, .leaflet-popup-content p {
+            margin: 0 !important;
+        }
+
+        .leaflet-popup .leaflet-popup-content-wrapper {
+            padding: 1px;
+            text-align: left;
+            border-radius: 5px 5px 5px 15px;
+        }
+    </style>
+</head>
+<body>
+    <!-- filters -->
+    <div class="map-wrapper">
+        <div class="filter-container">
+            <span class="service-instructions" _msthash="800670" _msttexthash="294996">Filtern Sie unsere Angebote</span>
+
+            <ul class="filter" id="filter">
+                <select name="Angebotsart" id="service-select">
+                    <option value="" _msthash="559390" _msttexthash="257127">Alle Einrichtungstyp/Angebotsart</option>
+                    <!-- <option value="Kita/Ganztag">Kita/Ganztag</option>
+                    <option value="Pflege">Pflege</option>
+                    <option value="Senior*innen">Senior*innen</option>
+                    <option value="Mitgliedsorganisation">Mitgliedsorganisation</option>
+                    <option value="Migration">Migration</option>
+                    <option value="Finanzielle Schwierigkeiten">Finanzielle Schwierigkeiten</option>
+                    <option value="Flucht/Asyl">Flucht/Asyl</option>
+                    <option value="Inklusion">Inklusion</option>
+                    <option value="Kultur">Kultur</option>
+                    <option value="Engagement">Engagement</option>
+                    <option value="Jugend">Jugend</option>
+                    <option value="Sucht">Sucht</option>
+                    <option value="LGBTQI*">LGBTQI*</option>
+                    <option value="Kinder">Kinder</option>
+                    <option value="Psychische Beeinträchtigung">Psychische Beeinträchtigung</option>
+                    <option value="Beratung">Beratung</option>
+                    <option value="Familie">Familie</option>
+                    <option value="Frauen">Frauen</option>
+                    <option value="Wohnungsnotfallhilfe">Wohnungsnotfallhilfe</option>
+                    <option value="Straffälligkeit">Straffälligkeit</option>
+                    <option value="Geschäftsstelle">Geschäftsstelle</option> -->
+                </select>
+
+                <select name="Sprache" id="language-select">
+                    <option value="" _msthash="559689" _msttexthash="198172">All languages</option>
+                    <!-- <option value="albanisch" _msthash="559871" _msttexthash="131066">Albanian</option>
+                    <option value="arabisch" _msthash="560053" _msttexthash="110474">Arabic</option>
+                    <option value="aserbaidschanisch" _msthash="560235" _msttexthash="343577">Azeri</option>
+                    <option value="bosnisch" _msthash="560417" _msttexthash="113919">Bosnian</option>
+                    <option value="chinesisch" _msthash="560599" _msttexthash="155493">Chinese</option>
+                    <option value="deutsch" _msthash="560781" _msttexthash="94926">German</option>
+                    <option value="englisch" _msthash="560963" _msttexthash="112424">English</option>
+                    <option value="franzoesisch" _msthash="561145" _msttexthash="204243">French</option>
+                    <option value="hebraeisch" _msthash="589472" _msttexthash="150059">Hebrew</option>
+                    <option value="italienisch" _msthash="589667" _msttexthash="178568">Italian</option>
+                    <option value="kroatisch" _msthash="589862" _msttexthash="134979">Croatian</option>
+                    <option value="kurdisch" _msthash="590057" _msttexthash="113945">Kurdish</option>
+                    <option value="mazedonisch" _msthash="590252" _msttexthash="179816">FYRO Macedonian</option>
+                    <option value="polnisch" _msthash="590447" _msttexthash="114374">Polish</option>
+                    <option value="portugiesisch" _msthash="590642" _msttexthash="234702">Portuguese</option>
+                    <option value="rumaenisch" _msthash="590837" _msttexthash="151866">Romanian</option>
+                    <option value="russisch" _msthash="591032" _msttexthash="116649">Russian</option>
+                    <option value="serbisch" _msthash="591227" _msttexthash="112749">Serbian</option>
+                    <option value="spanisch" _msthash="589654" _msttexthash="113464">Spanish</option>
+                    <option value="tuerkisch" _msthash="589849" _msttexthash="129714">Turkish</option>
+                    <option value="vietnamesisch" _msthash="590044" _msttexthash="231842">Vietnamese</option> -->
+                </select>
+
+                <select name="Region" class="has-value" id="region-select">
+                    <option value="" _msthash="559988" _msttexthash="174642">All Region</option>
+                    <!-- <option value="Mitte">Mitte</option>
+                    <option value="Pankow">Pankow</option>
+                    <option value="Friedrichshain-Kreuzberg">Friedrichshain-Kreuzberg</option>
+                    <option value="Lichtenberg">Lichtenberg</option>
+                    <option value="Tempelhof-Schöneberg">Tempelhof-Schöneberg</option>
+                    <option value="Neukölln">Neukölln</option><option value="Reinickendorf">Reinickendorf</option>
+                    <option value="Steglitz-Zehlendorf">Steglitz-Zehlendorf</option>
+                    <option value="Marzahn-Hellersdorf">Marzahn-Hellersdorf</option>
+                    <option value="Charlottenburg-Wilmersdorf">Charlottenburg-Wilmersdorf</option>
+                    <option value="verschiedene Standorte">verschiedene Standorte</option>
+                    <option value="Treptow-Köpenick">Treptow-Köpenick</option>
+                    <option value="Spandau">Spandau</option>
+                    <option value="Wedding">Wedding</option> -->
+                </select>
+            </ul>
+        </div>
+
+        <div id="map"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+
+    <script src="main.js"></script>
+</body>
+</html>
