@@ -1,0 +1,353 @@
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossorigin=""/>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.3.0/d3.min.js" integrity="sha512-NMhzM2RHzbCRO0s5VPaRC+2bW6nmNXimzC9p5sp2x19M+zzuSJ2T50dEQ7hpHkNjnX1mt8nQg1NNthwRZgsoIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<style>
+.map-wrapper{max-width:1080px;margin:0 auto}select{appearance:none;background-color:#fff;border:1px solid #c4c4c4;border-radius:0;color:#222221;font-family:inherit;font-size:inherit;min-height:52px;width:100%;padding:.5rem}select+select{margin-left:1rem}.filter{display:flex;flex-wrap:no-wrap;width:100%;padding:0;justify-content:space-between}.filter .has-value{background-color:#e2382a;background-image:url(../assets/icons/chevron_dropdown-white-8e9b3105a4.svg);border-color:#e2382a;color:#fff;background-repeat:no-repeat;background-position:98%}select option{text-transform:capitalize}#map{height:80vh;width:100%}.div-marker>div{background-color:#e2382a;padding:5px;width:25px;height:30px;border-radius:50% 45% 45% 45%;box-shadow:0 0 .3em #222221;mix-blend-mode:color;font-weight:700;text-align:center;color:#fff}.div-marker>div.church-icon{background-color:#ff7f00;padding:5px;width:25px;height:30px;border-radius:5%;box-shadow:0 0 .4em #222221;mix-blend-mode:color;border-radius:10% 10% 30% 30%}.div-marker div.church-icon::after{border:8px solid #ff7f00;border-color:#ff7f00 transparent transparent transparent}.div-marker div::after{position:absolute;bottom:-31.5px;left:4.5px;border:8px solid #e41a1c;content:" ";border-color:#e41a1c transparent transparent transparent;z-index:-1}.marker-cluster{width:auto;height:auto;border:none;background-color:transparent}.cluster-marker{width:30px;height:30px;border-radius:20% 30% 40% 50%;background-color:#00acd3;text-align:center;box-shadow:0 0 .8rem #5197f4;color:#fff;display:flex;align-items:center;justify-content:center}.leaflet-popup-content h2,.leaflet-popup-content p{margin:0!important}.popup-body{padding:0.25rem;}.leaflet-popup .leaflet-popup-content-wrapper{font-family: AWO Fago,Helvetica,Arial,sans-serif;padding:1px;text-align:left;border-radius:5px 5px 5px 15px; }
+
+.section-link {margin: 0.25rem 0;width: 100%; }
+.section-link-inner {width: 100%;background-color: #e2382a;border-radius: 5px;padding:0.5rem 0.375rem;text-align: center;}
+.btn-link {text-decoration: none;color:#fff !important; }
+.leaflet-control-layers-selector { width:auto !important; opacity:1};
+</style> 
+<script type="text/javascript">let data = {{ jsonData|json_encode }}</script>
+<div class="container centerMaxWidthContainer" is="flynt-map-component">
+    <h2 class="h1 preTitle">
+        Unsere Einrichtungen und die unserer Mitgliedsorganisationen auf einen Blick
+    </h2>
+    <div class="map-wrapper">
+        <div class="filter-container">
+            <span class="service-instructions" _msthash="800670" _msttexthash="294996">Filtern Sie unsere Angebote</span>
+            <ul class="filter" id="filter">
+                <select name="servicecategory" id="service-select">
+                    <option value="all" _msthash="559390" _msttexthash="257127">Alle Einrichtungstypen/Angebotsarten</option>
+                </select>
+
+                <select name="traeger" id="institution-select">
+                    <option value="all" _msthash="559689" _msttexthash="198172">Alle Träger</option>
+                </select>
+
+                <select name="neighbourhood" class="" id="region-select">
+                    <option value="all" _msthash="559988" _msttexthash="174642">Alle Regionen</option>
+                </select>
+            </ul>
+        </div>
+
+        <div class="content ">
+            {{ contentHtml|e('wp_kses_post') }}
+        </div>
+
+        <div id="map" style="width:100%; height:80vh" ></div>
+    </div>
+</div>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+
+<script>
+var servicesSelect = document.getElementById("service-select");
+var regionsSelect = document.getElementById("region-select");
+var institutionSelect = document.getElementById("institution-select");
+var servicesData = [];
+let angebotIcons = ['angebot_kita_ganztag', 'angebot_pflege', 'angebot_seniorinnen', 'angebot_mitgliedsorganisation', 'angebot_finanzielle_schwierigkeiten', 'angebot_flucht_asyl', 'angebot_inklusion', 'angebot_jugend', 'angebot_kultur', 'angebot_migration', 'angebot_lgbtqi', 'angebot_sucht', 'angebot_familie', 'angebot_frauen', 'angebot_geschaeftsstelle', 'angebot_straffaelligkeit', 'angebot_psychische_beeintraechtigung', 'angebot_kinder', 'angebot_wohnungsnotfallhilfe']
+let traegerIcons = [
+    'traeger_awo_kreisverband_spree-wuhle', 
+    'traeger_awo_kreisverband_mitte', 
+    'traeger_awo_kreisverband_suedost', 
+    'traeger_awo_kreisverband_berlin-nordwest', 'traeger_awo_kreisverband_suedwest',
+    'traeger_awo_kreisverband_spandau', 'traeger_awo_kreisverband_treptow-köpenick', 
+
+    // 'traeger_awo_pro:mensch_ggmbh', 
+    // 'traeger_awo_gemeinnuetzige_pflegegesellschaft_mbh', 
+    // 'traeger_liga_berlin_der_spitzenverbände_der_freien_wohlfahrtspflege', 
+    
+    ]
+
+var map = L.map('map').setView([52.50697119418263, 13.400917053222658], 11);
+
+// load a tile layer
+L.tileLayer('https://{s}.tile.jawg.io/jawg-sunny/{z}/{x}/{y}{r}.png?access-token=URi8mB9dsRckbqXdBLh1emM3z9mabDqlnrdrHjSMV6wsZhLunQ03Nlkbr3FzDj2H', {
+	attribution: '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+	minZoom: 0,
+	maxZoom: 22,
+	subdomains: 'abcd',
+	accessToken: 'URi8mB9dsRckbqXdBLh1emM3z9mabDqlnrdrHjSMV6wsZhLunQ03Nlkbr3FzDj2H'
+}).addTo(map);
+
+// regions
+let regions = L.geoJSON(null, {
+    style:function(feature) {
+        return {
+            fillColor:feature.properties.color,
+            fillOpacity:0.5,
+            color:'#333',
+            weight:1
+        }
+    }
+});
+
+fetch(`${data.dataUrl}/data/regions.geojson`)
+.then(res => res.json())
+.then(data => {
+    regions.addData(data);
+
+    map.fitBounds(regions.getBounds())
+})
+.catch(console.error)
+
+
+// markers
+let markerIcon = L.divIcon({
+    className:'div-marker',
+    html:'<div></div>'
+});
+
+let markerCluster = L.markerClusterGroup({
+    iconCreateFunction: iconCreate
+})
+.addTo(map);
+    
+function iconCreate(cluster) {
+    return L.divIcon({
+        className:'marker-cluster',
+        html: '<div class="cluster-marker"><b>' + cluster.getChildCount() + '</b><div>' 
+    });
+}
+
+// 
+let servicesObj = L.geoJSON(null, {
+
+});
+
+servicesObj.addTo(map);
+
+// Layer control
+let layerControl = L.control.layers({}, {
+    'Regionen':regions,
+    'Angebote':markerCluster
+}, { collapsed:false }).addTo(map)
+
+
+// handle input changes
+let filterObj = {
+    servicecategory:'all',
+    servicelanguage:'all',
+    neighbourhood:'all'
+};
+
+let filters = document.querySelectorAll(".filter > select");
+console.log(filters);
+
+filters.forEach(filter => {
+    filter.onchange = function(e) {
+        // get the id
+        let { name, value } = e.target;
+        filterObj[name] = value;
+
+        let filter = [];
+        Object.keys(filterObj).forEach(key => {
+            if(filterObj[key] != 'all') {
+                filter.push({
+                    key,
+                    value:filterObj[key]
+                });
+            }
+        });
+
+        value == 'all' ? toggleActiveClass(e.target) : toggleActiveClass(e.target, "add");
+
+        // filter the results
+        let filterResult = filterServices(filter);
+        console.log(filterResult);
+
+        let markers = createMarkers(filterResult);
+
+        // update the map
+        markerCluster.clearLayers();
+        markerCluster.addLayers(markers);
+    }
+});
+
+function handleSelectChange(e) {
+
+}
+
+function toggleActiveClass(element, action='remove') {
+    if(action == "add") {
+        element.classList.add('has-value');
+    } else {
+        element.classList.remove('has-value');
+    }
+    
+}
+
+// filter the data
+function filterServices(filterItems) {
+    console.log(filterItems);
+    let result = JSON.parse(JSON.stringify(servicesData));
+    return result.filter(item => filterItems.every(fItem => item[fItem.key].includes(fItem.value)))
+}
+
+function onLoad(posts) {  
+    console.log(posts);      
+    let markers = createMarkers(posts);
+    markerCluster.addLayers(markers);
+}
+
+function loadSelectValues(data) {
+    let rCompose = compose(getUniqueValues, stringFilter, getValues)
+    let sCompose = compose(getUniqueValues, stringFilter, trimMap, flattenValues, splitMap, getValues);
+
+    let services = sCompose({items:data.terms[0], field:'name'})
+    let regions = rCompose({items:data.terms[2], field:'name'});
+    let institutions = sCompose({items:Object.values(data.posts), field:'traeger'})
+    console.log(institutions);
+
+    // update the  
+    updateSelect(
+        optionItems(optionItem)(services.sort())
+    )(servicesSelect);
+
+    updateSelect(
+        optionItems(optionItem)(regions.sort())
+    )(regionsSelect);
+
+    updateSelect(
+        optionItems(optionItem)(institutions.sort())
+    )(institutionSelect);
+
+    servicesData = JSON.parse(JSON.stringify(Object.values(data.posts)))
+
+    onLoad(servicesData);
+}
+
+function splitValues(item) {
+    return item.split(",");
+}
+
+function flattenValues(items) {
+    return items.flatMap(i => i);
+}
+
+// get the regions
+function getValues({items, field}) {
+    return items.map(item => item[field].trim())
+}
+
+function getUniqueValues(items) {
+    return [... new Set(items)];
+}
+
+const splitMap = items => items.map(splitValues);
+const trimMap = items => items.map(item => item.trim());
+const stringFilter = items => items.filter(item => item);
+
+const compose = (...fns) => x => fns.reduceRight((y, f) => f(y), x);
+
+// update the select section
+const updateSelect = (optionHtml) => elem => elem.innerHTML += optionHtml;
+const optionItems = fn => x => x.map(fn);
+function optionItem(item) {
+    return `<option value="${item}">${item}</option>`
+}
+
+function createMarkers(data) {
+
+    let markerArray = data.filter(item => item.laengengrad != "0" && item.laengengrad).map(item => {
+        let popupContent = getPopupContent(item);
+
+        // let iconName = getIconName(item.traeger, 'traeger');
+        let iconName = getIconName(item.servicecategory, 'angebot');
+        let icon = iconName ? getMarkerIcon(iconName, 'angebot') : markerIcon;
+
+
+        return L.marker([
+            parseFloat(item.breitengrad), 
+            parseFloat(item.laengengrad)
+        ], 
+        { icon:icon, title:item.id }
+        ).bindPopup(popupContent);
+
+
+    });
+
+    console.log(markerArray.length);
+    return markerArray;
+}
+
+function getPopupContent(item) {
+    return `<div>
+        <h5 style="margin:0;">${item.post_title}</h5> 
+        <p>${item.address}</p>
+        <div class="popup-body">
+            <div class="">
+                <div><b>Telefonnummer</b></div>
+                <div>${item.telephone}</div>
+            </div>
+            <div class="">
+                <div><b>Angebote</b></div>
+                <div>${item.servicecategory}</div>
+            </div>
+
+            <div class="">
+                <div><b>Regionen</b></div>
+                <div>${item.neighbourhood}</div>
+            </div>
+
+            <div class="">
+                <div><b>Träger</b></div>
+                <div>${item.traeger}</div>
+            </div>
+
+            <div class="section-link">
+                <a href="${item.website}" class="btn-link">
+                    <div class="section-link-inner">Website</div>
+                </a>
+            </div>
+            
+        </div>
+    </div>`;
+}
+
+function getMarkerIcon(value, field) {
+    return L.icon({
+        iconUrl:getIconUrl(value, field),
+        iconSize:[32, 32]
+    });
+}
+
+loadSelectValues(data);
+
+// loadSelectValues(data);
+function getIconName(value, field) {
+    value = value.split(",")[0];
+
+    let name = "";
+    if(field == 'angebot') {
+        name = value.replace(/\s/g, "_").toLowerCase().replace(/ä/g, "ae").replace("/", "_").replace("*", "");
+        let iconName = `${field}_${name}`;
+
+        return angebotIcons.indexOf(iconName) != -1 ? iconName : false;
+    } else {
+        name = value.trim().replace(/\s/g, "_").replace("_e.V.", "").replace(/ü/g, "ue").toLowerCase()
+        let iconName = `${field}_${name}`;
+
+        return traegerIcons.indexOf(iconName) != -1 ? iconName : 'traeger_mitgliedsorganisation_korporatives_mitglied';
+    }
+
+}
+
+function getIconUrl(iconName, field) {
+    // return iconName;
+    return `${data.dataUrl}/${field}Icon/${iconName}.png`
+}
+
+
+// markerIcon (first category), multiple filter, 
+// traeger
+</script>
+
+

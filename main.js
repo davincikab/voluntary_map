@@ -6,11 +6,19 @@ var servicesData = [];
 var map = L.map('map').setView([52.5034205,13.4128348],9);
 
 // load a tile layer
-L.tileLayer('https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png' ,
-  {
-   attribution: '<a href="https://www.td-softwaresystems.de" target="_blank">TD Software.Systems </a> | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-   maxZoom: 18,
-   minZoom: 2
+// L.tileLayer('https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png' ,
+//   {
+//    attribution: '<a href="https://www.td-softwaresystems.de" target="_blank">TD Software.Systems </a> | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+//    maxZoom: 18,
+//    minZoom: 2
+// }).addTo(map);
+
+L.tileLayer('https://{s}.tile.jawg.io/jawg-sunny/{z}/{x}/{y}{r}.png?access-token=URi8mB9dsRckbqXdBLh1emM3z9mabDqlnrdrHjSMV6wsZhLunQ03Nlkbr3FzDj2H', {
+	attribution: '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+	minZoom: 0,
+	maxZoom: 22,
+	subdomains: 'abcd',
+	accessToken: 'URi8mB9dsRckbqXdBLh1emM3z9mabDqlnrdrHjSMV6wsZhLunQ03Nlkbr3FzDj2H'
 }).addTo(map);
 
 let markerIcon = L.divIcon({
@@ -58,6 +66,8 @@ filters.forEach(filter => {
             }
         });
 
+        value == 'all' ? toggleActiveClass(e.target) : toggleActiveClass(e.target, "add");
+
         // filter the results
         let filterResult = filterServices(filter);
         let markers = createMarkers(filterResult);
@@ -67,6 +77,19 @@ filters.forEach(filter => {
         markerCluster.addLayers(markers);
     }
 });
+
+function handleSelectChange(e) {
+
+}
+
+function toggleActiveClass(element, action='remove') {
+    if(action == "add") {
+        element.classList.add('has-value');
+    } else {
+        element.classList.remove('has-value');
+    }
+    
+}
 
 // filter the data
 function filterServices(filterItems) {
@@ -80,6 +103,22 @@ function filterServices(filterItems) {
     return result;
 }
 
+function onLoad() {
+    let posts = Object.keys(data.posts);
+
+    // geocode the addresses
+    getDataCoord(posts, cbFunction);
+    function cbFunction(geoData) {
+        // console.log(JSON.stringify(data));
+        console.log("Success");
+        console.log(geoData);
+        servicesData = [...geoData];
+
+        let markers = createMarkers(geoData);
+        markerCluster.addLayers(markers);
+    }
+}
+
 
 // read the csv file
 d3.csv('map_info.csv')
@@ -89,9 +128,9 @@ d3.csv('map_info.csv')
     let rCompose = compose(getUniqueValues, stringFilter, getValues)
     let sCompose = compose(getUniqueValues, stringFilter, trimMap, flattenValues, splitMap, getValues);
 
-    let services = sCompose({items:data, field:'Angebotsart'})
-    let regions = rCompose({items:data, field:'Region'});
-    let languages = sCompose({items:data, field:'Sprache'})
+    let services = sCompose({items:data.terms[0], field:'name'})
+    let regions = rCompose({items:data.terms[2], field:'name'});
+    let institutions = sCompose({items:Object.values(data.posts), field:'traeger'})
     console.log(languages);
 
     // update the  
@@ -104,8 +143,8 @@ d3.csv('map_info.csv')
     )(regionsSelect);
 
     updateSelect(
-        optionItems(optionItem)(languages.sort())
-    )(languageSelect);
+        optionItems(optionItem)(institutions.sort())
+    )(institutionSelect);
 
     // geocode the addresses
     getDataCoord(data, cbFunction);
@@ -224,11 +263,9 @@ function createMarkers(data, isChurch) {
 }
 
 function getPopupContent(item, isChurch) {
-    if(isChurch) {
-        return `<h2>${item.Name}</h5> <p>${item.Adresse}</p>`;
-    } else {
-        return `<h2>${item.Name}</h5> <p>${item.Adresse}</p>`;
-    }
+    return `<div>
+        ${item.Name}</h5> <p>${item.Adresse}
+    </div>`;
 }
 
 function getMarkerIcon(item) {
