@@ -7,7 +7,18 @@ var activeType = "angebot";
 
 let servicesData = [];
 let filterResult;
-let angebotIcons = ['angebot_kita_ganztag', 'angebot_pflege', 'angebot_seniorinnen', 'angebot_mitgliedsorganisation', 'angebot_finanzielle_schwierigkeiten', 'angebot_flucht_asyl', 'angebot_inklusion', 'angebot_jugend', 'angebot_kultur', 'angebot_migration', 'angebot_lgbtqi', 'angebot_sucht', 'angebot_familie', 'angebot_frauen', 'angebot_geschaeftsstelle', 'angebot_straffaelligkeit', 'angebot_psychische_beeintraechtigung', 'angebot_kinder', 'angebot_wohnungsnotfallhilfe']
+let angebotIcons = [
+    'angebot_kita_ganztag', 'angebot_pflege', 'angebot_seniorinnen', 
+    'angebot_mitgliedsorganisation', 'angebot_finanzielle_schwierigkeiten',
+    'angebot_flucht_asyl', 'angebot_inklusion', 'angebot_jugend',
+    'angebot_kultur', 'angebot_migration', 'angebot_lgbtqi', 
+    'angebot_sucht', 'angebot_familie', 'angebot_frauen', 
+    'angebot_geschaeftsstelle', 'angebot_straffaelligkeit',
+    'angebot_psychische_beeintraechtigung', 'angebot_kinder', 'angebot_wohnungsnotfallhilfe',
+    'angebot_engagement', 'angebot_beratung','angebot_freiwilligendienst', 'angebot_migration_integration',
+    'angebot_rechts-sozialberatung'
+];
+
 let traegerIcons = [
     'traeger_awo_kreisverband_spree-wuhle', 
     'traeger_awo_kreisverband_mitte', 
@@ -317,6 +328,10 @@ function getIconName(value, field) {
     if(field == 'angebot') {
         name = value.replace(/\s/g, "_").toLowerCase().replace(/ä/g, "ae").replace("/", "_").replace("*", "");
         let iconName = `${field}_${name}`;
+
+        if(angebotIcons.indexOf(iconName) == -1) {
+            console.log(iconName);
+        }
 
         return angebotIcons.indexOf(iconName) != -1 ? iconName : false;
     } else {
