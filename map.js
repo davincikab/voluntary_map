@@ -41,7 +41,7 @@ let regions = L.geoJSON(null, {
             fillColor:feature.properties.color,
             fillOpacity:0.3,
             color:'#333',
-            weight:1
+            weight:0.5
         }
     }
 });

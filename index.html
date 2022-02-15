@@ -24,6 +24,7 @@
         .map-wrapper {
             max-width: 1080px;
             margin: 0 auto;
+            font-size: 16px;
         }
 
         select {
@@ -77,7 +78,6 @@
             border-radius: 50% 30% 40% 30%;
             box-shadow: 0 0 0.4em #222221;
             mix-blend-mode: color;
-
             font-weight: 700;
             text-align: center;
             color:white;
@@ -177,6 +177,7 @@
 
         .legend-item img {
             height: 30px;
+            width: auto;
         }
 
         .visualize-by {
@@ -191,12 +192,39 @@
         }
 
         .visualize-by h6{
-            margin: 0;
-            font-size: 1rem;;
+            margin: 0 !important;
+            font-size: 1rem;
+            padding: 0px;
+            font-size: 16px !important;
         }
 
         .d-none {
             display: none !important;
+        }
+
+        .map-wrapper label {
+            margin:0 !important;
+            font-size: 16px;
+            width: auto;
+        }
+
+        .map-wrapper input[type='radio'] {
+            opacity: 1;
+            position: relative;
+            margin:0;
+            width: auto;
+        }
+
+        .map-wrapper label::before {
+            display: none;
+        }
+
+        @media screen and (max-width:480px) {
+            .legend-section > div {
+                grid-template-columns: 1fr 1fr;
+                height: 200px;
+                overflow-y: auto;
+            }
         }
     </style>
 </head>
@@ -227,7 +255,7 @@
                 <h6>Visualize By</h6>
                 <div class="">
                     <input type="radio" name="type" id="angebot" class="visual-type" checked>
-                    <label for="angebostat">Angebotsart</label>
+                    <label for="angebot">Angebotsart</label>
                 </div>
                 <div class="">
                     <input type="radio" name="type" id="traeger" class="visual-type" >
