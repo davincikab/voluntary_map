@@ -22,7 +22,7 @@
 
             <ul class="filter" id="filter">
                 <select name="servicecategory" id="service-select">
-                    <option value="all" _msthash="559390" _msttexthash="257127">Alle Einrichtungstyp/Angebotsart</option>
+                    <option value="all" _msthash="559390" _msttexthash="257127">Alle Einrichtungstypen/Angebotsarten</option>
                 </select>
 
                 <select name="traeger" id="institution-select">
@@ -37,7 +37,7 @@
 
         <div id="map">
             <div class="visualize-by">
-                <h6>Visualize By</h6>
+                <h6>Anzeigen nach</h6>
                 <div class="">
                     <input type="radio" name="type" id="angebot" class="visual-type" checked>
                     <label for="angebot">Angebotsart</label>
@@ -70,7 +70,18 @@ var activeType = "angebot";
 
 let servicesData = [];
 let filterResult;
-let angebotIcons = ['angebot_kita_ganztag', 'angebot_pflege', 'angebot_seniorinnen', 'angebot_mitgliedsorganisation', 'angebot_finanzielle_schwierigkeiten', 'angebot_flucht_asyl', 'angebot_inklusion', 'angebot_jugend', 'angebot_kultur', 'angebot_migration', 'angebot_lgbtqi', 'angebot_sucht', 'angebot_familie', 'angebot_frauen', 'angebot_geschaeftsstelle', 'angebot_straffaelligkeit', 'angebot_psychische_beeintraechtigung', 'angebot_kinder', 'angebot_wohnungsnotfallhilfe']
+let angebotIcons = [
+    'angebot_kita_ganztag', 'angebot_pflege', 'angebot_seniorinnen', 
+    'angebot_mitgliedsorganisation', 'angebot_finanzielle_schwierigkeiten',
+    'angebot_flucht_asyl', 'angebot_inklusion', 'angebot_jugend',
+    'angebot_kultur', 'angebot_migration', 'angebot_lgbtqi', 
+    'angebot_sucht', 'angebot_familie', 'angebot_frauen', 
+    'angebot_geschaeftsstelle', 'angebot_straffaelligkeit',
+    'angebot_psychische_beeintraechtigung', 'angebot_kinder', 'angebot_wohnungsnotfallhilfe',
+    'angebot_engagement', 'angebot_beratung','angebot_freiwilligendienst', 'angebot_migration_integration',
+    'angebot_rechts-sozialberatung'
+];
+
 let traegerIcons = [
     'traeger_awo_kreisverband_spree-wuhle', 
     'traeger_awo_kreisverband_mitte', 
@@ -303,7 +314,7 @@ function optionItem(item) {
 
 function createMarkers(data, type="angebot") {
 
-    let markerArray = data.filter(item => item.laengengrad != "0" && item.laengengrad).map(item => {
+    let markerArray = data.filter(item => item.laengengrad != "0" && item.laengengrad && item.servicecategory).map(item => {
         let popupContent = getPopupContent(item);
         let iconName;
         if(type == "angebot") {
@@ -380,6 +391,10 @@ function getIconName(value, field) {
     if(field == 'angebot') {
         name = value.replace(/\s/g, "_").toLowerCase().replace(/ä/g, "ae").replace("/", "_").replace("*", "");
         let iconName = `${field}_${name}`;
+
+        if(angebotIcons.indexOf(iconName) == -1) {
+            console.log(iconName);
+        }
 
         return angebotIcons.indexOf(iconName) != -1 ? iconName : false;
     } else {

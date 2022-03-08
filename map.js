@@ -137,6 +137,8 @@ filters.forEach(filter => {
         // update the map
         markerCluster.clearLayers();
         markerCluster.addLayers(markers);
+
+        paginator.setItems(filterResult).renderCards().updateCount();
     }
 });
 
@@ -217,6 +219,7 @@ function loadSelectValues(data) {
     servicesData = JSON.parse(JSON.stringify(Object.values(data.posts)))
 
     onLoad(servicesData);
+    paginator.setItems(servicesData).renderCards().updateCount();
 }
 
 function splitValues(item) {
@@ -251,7 +254,7 @@ function optionItem(item) {
 
 function createMarkers(data, type="angebot") {
 
-    let markerArray = data.filter(item => item.laengengrad != "0" && item.laengengrad).map(item => {
+    let markerArray = data.filter(item => item.laengengrad != "0" && item.laengengrad && item.servicecategory).map(item => {
         let popupContent = getPopupContent(item);
         let iconName;
         if(type == "angebot") {
@@ -261,15 +264,19 @@ function createMarkers(data, type="angebot") {
         }
 
         let icon = iconName ? getMarkerIcon(iconName, type) : markerIcon;
-
-
-        return L.marker([
+        let marker = L.marker([
             parseFloat(item.breitengrad), 
             parseFloat(item.laengengrad)
         ], 
         { icon:icon }
         ).bindPopup(popupContent);
 
+
+        marker.on('mouseover', function(e) {
+            marker.togglePopup();
+        });
+
+        return marker;
 
     });
 
@@ -317,8 +324,6 @@ function getMarkerIcon(value, field) {
         iconSize:[32, 32]
     });
 }
-
-loadSelectValues(data);
 
 // loadSelectValues(data);
 function getIconName(value, field) {
@@ -396,5 +401,62 @@ function legendItem(iconName, category, field="angebot") {
 }
 
 updateLegend();
+
+// pagination section
+const Paginator = function(items) {
+    this.items = items;
+    this.currentPage = 0;
+    this.itemsPerPage = 10;
+    this.cardItems = document.getElementById("card-items");
+    this.cardCount = document.getElementById("card-count");
+
+    this.setItems = function (items) {
+        this.items = items;
+
+        return this;
+    }
+
+    this.updateCount = function() {
+        this.cardCount.innerHTML = `<span data-postamount="">${this.items.length}</span> 
+        <span class="filterPosts">Einträge filtern</span>
+        <span class="filteredPosts">Einträge gefunden</span>`;
+
+        return this;
+    }
+
+    this.renderCards = function() {
+        let start = this.currentPage * this.itemsPerPage;
+        let end = start + this.itemsPerPage;
+
+        
+        let items = this.items.slice(start, end);
+        console.log(items);
+
+        let cards = items.map(item => {
+            let services = item.servicecategory.split(",").map(service => `<span>${service}</span>,`);
+
+            return `<a href="${item.guid}" class="card boxRadius boxShadow">
+                <div>${services}</div>
+            <div class="card-category"></div>
+            <div class="card-title h2">${item.post_title}</div>
+                    <div class="card-location">Wo? ${item.address}</div>
+                <div class="button button--linkSmall">mehr erfahren</div>
+          </a>`;
+
+        }).join("");
+
+        this.cardItems.innerHTML = cards;
+        return this;
+    }
+
+    this.renderPages = function() {
+
+
+    }
+}
+
+let paginator = new Paginator([]);
+
+loadSelectValues(data);
 // markerIcon (first category), multiple filter, 
 // traeger

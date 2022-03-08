@@ -219,6 +219,142 @@
             display: none;
         }
 
+        /* card section */
+        .card-section {
+            padding:0.5rem;
+        }
+
+        a.card {
+            color: #e2382a;
+        }
+
+        .card {
+            -ms-flex-align: start;
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+            -webkit-box-pack: start;
+            -ms-flex-pack: start;
+            align-items: flex-start;
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            -ms-flex-direction: column;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding: 24px 40px;
+            text-decoration: none;
+            box-shadow: 0 4px 14px 0 rgb(0 0 0 / 12%);
+        }
+
+        .card + .card {
+            margin-top: 20px;
+        }
+
+        .card-count {
+            margin-top: 20px;
+            margin-bottom: 32px;
+            font-size: 1.2rem;
+        }
+
+        .card-count span:first-child {
+            font-weight: 700;
+        }
+
+        .card-count span:last-child {
+            display: none;
+        }
+
+        .card-location {
+            color: #222221;
+            margin: 0 0 8px;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            color: #222221;
+            margin: 12px 0 8px;
+            padding-bottom: 0;
+            padding-top: 0;
+            text-decoration: none;
+        }
+
+        .button--linkSmall {
+            background-color: transparent;
+            border: 0;
+            color: #e2382a;
+            font-weight: 700;
+            letter-spacing: .125rem;
+            padding: 0 0 1px;
+            position: relative;
+            /* text-transform: uppercase; */
+            -webkit-transition: color .2s ease-out;
+            transition: color .2s ease-out;
+        }
+
+        .pagination {
+            display: flex;
+            -webkit-box-pack: center;
+            -ms-flex-pack: center;
+            -webkit-filter: drop-shadow(0 4px 14px transparent);
+            filter: drop-shadow(0 4px 14px rgba(0,0,0,0));
+            justify-content: center;
+            margin:20px auto;
+        }
+
+        .pagination ul {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .pagination ul li {
+            margin-bottom: 0;
+            margin-top: 0;
+            padding-left: 0;
+            display: none;
+            color: #222221;
+            cursor: pointer;
+            font-weight: 700;
+            margin: 0 15px;
+            opacity: .5;
+        }
+
+        .pagination ul li.indicator-visible, .pagination .ellipsis {
+            display: block;
+        }
+
+        .pagination .current {
+            color: #e2382a;
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            opacity: 1;
+        }
+
+        .pagination button {
+            border:0;
+            background-color: transparent;
+        }
+
+        .pagination button:disabled svg {
+            fill: #666;
+            opacity: .5;
+        }
+
+        .pagination button svg {
+            fill: #e2382a;
+            opacity: .5;
+            width: 32px;
+            height: 18px;
+        }
+
+        .pagination-previous svg {
+            transform: rotate(180deg);
+        }
+
         @media screen and (max-width:480px) {
             .legend-section > div {
                 grid-template-columns: 1fr 1fr;
@@ -267,6 +403,42 @@
         <div class="legend-section" id="">
             <div class="" id="angebot-legend"></div>
             <div class="d-none" id="traeger-legend"></div>
+        </div>
+
+        <div class="card-section" id="card-section">
+            <div class="card-count" id="card-count">
+                <span data-postamount="">96</span> 
+                <span class="filterPosts">Einträge filtern</span>
+                <span class="filteredPosts">Einträge gefunden</span>
+            </div>
+            <div class="card-items" id="card-items">
+
+            </div>
+        </div>
+
+        <div class="pagination pagination-section">
+            <button id="prev-btn" class="pagination-previous" disabled>
+                <svg width="58" height="33" viewBox="0 0 58 33" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M41.5786 0.753299L40.1644 2.18409C39.8297 2.52272 39.8297 3.0718 40.1644 3.41051L51.2451 14.621H0.857142C0.383785 14.621 0 15.0093 0 15.4882V17.5116C0 17.9905 0.383785 18.3788 0.857142 18.3788H51.2451L40.1644 29.5894C39.8297 29.928 39.8297 30.4771 40.1644 30.8158L41.5786 32.2466C41.9134 32.5852 42.4561 32.5852 42.7909 32.2466L57.749 17.1132C58.0837 16.7745 58.0837 16.2254 57.749 15.8867L42.7908 0.753299C42.4561 0.41459 41.9134 0.41459 41.5786 0.753299Z"></path>
+                </svg>
+            </button>
+
+            <ul>
+                <li data-page="1" class="current">1</li>
+                <li data-page="2" class="indicator-visible">2</li>
+                <li data-page="3" class="indicator-visible">3</li>
+                <li data-page="4">4</li>
+                <li data-page="5">5</li>
+                <li data-page="6">6</li>
+                <li data-page="7">7</li>
+                <li class="ellipsis">...</li>
+                <li data-page="8" class="indicator-visible last-indicator">8</li>
+            </ul>
+
+            <button class="pagination-next" data-next=""><svg width="58" height="33" viewBox="0 0 58 33" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M41.5786 0.753299L40.1644 2.18409C39.8297 2.52272 39.8297 3.0718 40.1644 3.41051L51.2451 14.621H0.857142C0.383785 14.621 0 15.0093 0 15.4882V17.5116C0 17.9905 0.383785 18.3788 0.857142 18.3788H51.2451L40.1644 29.5894C39.8297 29.928 39.8297 30.4771 40.1644 30.8158L41.5786 32.2466C41.9134 32.5852 42.4561 32.5852 42.7909 32.2466L57.749 17.1132C58.0837 16.7745 58.0837 16.2254 57.749 15.8867L42.7908 0.753299C42.4561 0.41459 41.9134 0.41459 41.5786 0.753299Z"></path>
+                </svg>
+            </button>
         </div>
     </div>
 
