@@ -138,7 +138,12 @@ filters.forEach(filter => {
         markerCluster.clearLayers();
         markerCluster.addLayers(markers);
 
-        paginator.setItems(filterResult).renderCards().updateCount();
+        paginator
+            .setItems(filterResult)
+            .renderCards()
+            .updateCount()
+            .updateActivePageItem()
+            .displayPages();
     }
 });
 
@@ -417,6 +422,7 @@ const Paginator = function(items) {
 
     this.setItems = function (items) {
         this.items = items;
+        this.currentPage = 0;
 
         return this;
     }
@@ -441,7 +447,7 @@ const Paginator = function(items) {
             let services = item.servicecategory.split(",").filter(service => service).map(service => `<span>${service}</span>,`).join("");
 
             return `<a href="${item.guid}" class="card boxRadius boxShadow">
-                <div class="services-section">${services}</div>
+                <div class="card-services">${services}</div>
             <div class="card-category"></div>
             <div class="card-title h2">${item.post_title}</div>
                     <div class="card-location">Wo? ${item.address}</div>
@@ -481,6 +487,8 @@ const Paginator = function(items) {
     }
 
     this.updateActivePageItem = function() {
+        console.log(this.currentPage);
+
         this.listPages.forEach(pageItem => {
             let page = pageItem.getAttribute("data-page");
 
@@ -493,16 +501,20 @@ const Paginator = function(items) {
             pageItem.classList.remove("current");
             return pageItem;
         });
+
+        return this;
     }
 
     this.toggleBtnDisabledState = function() {
-        if(this.activePage == 0) {
+        if(this.currentPage == 0) {
             this.previousButton.disabled = true;
         } else {
             this.previousButton.disabled = false;
         }
 
-        if(this.currentPage == this.items.length -1) {
+        let pageCounts = Math.floor(this.items.length / this.itemsPerPage);
+
+        if(this.currentPage >= pageCounts) {
             this.nextButton.disabled = true;
         } else {
             this.nextButton.disabled = false;
@@ -534,6 +546,34 @@ const Paginator = function(items) {
 
         this.renderCards();
         return this;
+    }
+
+    this.displayPages = function() {
+        let pageCounts = Math.floor(this.items.length / this.itemsPerPage);
+        console.log(pageCounts);
+
+        if(pageCounts < 8) {
+            // hide a few pages
+            this.listPages.forEach(pageItem => {
+                let page = pageItem.getAttribute("data-page");
+                if(page <= pageCounts) {
+                    pageItem.classList.remove("d-none");
+                    return pageItem;
+                }
+                pageItem.classList.add('d-none');
+                return pageItem;
+            });
+
+        } else {
+            // display the pages
+            this.listPages.forEach(pageItem => {
+                pageItem.classList.remove('d-none');
+            
+                return pageItem;
+            });
+        }
+
+
     }
 }
 
