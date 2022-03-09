@@ -161,23 +161,28 @@
         }
 
         /* .legend-section */
+        .legend-section {
+            margin-top: 10px;
+        }
+
         .legend-section > div {
             display: grid;
-            grid-template-columns: repeat(auto-fill, 200px) ;
+            grid-template-columns: repeat(auto-fill, 300px) ;
             grid-gap:10px;
         }
 
         .legend-item {
             display: flex;
-            flex-direction: column;
+            /* flex-direction: column; */
             align-items: center;
             margin: 0 0.2rem;
-            width: 130px;
+            /* width: 130px; */
         }
 
         .legend-item img {
             height: 30px;
             width: auto;
+            margin-right: 10px;
         }
 
         .visualize-by {
@@ -337,6 +342,11 @@
         .pagination button {
             border:0;
             background-color: transparent;
+            cursor: pointer;
+        }
+
+        .pagination button > * {
+            pointer-events: none;
         }
 
         .pagination button:disabled svg {
@@ -424,7 +434,7 @@
             </button>
 
             <ul>
-                <li data-page="1" class="current">1</li>
+                <li data-page="1" class="current indicator-visible">1</li>
                 <li data-page="2" class="indicator-visible">2</li>
                 <li data-page="3" class="indicator-visible">3</li>
                 <li data-page="4">4</li>
@@ -435,7 +445,8 @@
                 <li data-page="8" class="indicator-visible last-indicator">8</li>
             </ul>
 
-            <button class="pagination-next" data-next=""><svg width="58" height="33" viewBox="0 0 58 33" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <button class="pagination-next" data-next="">
+                <svg width="58" height="33" viewBox="0 0 58 33" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M41.5786 0.753299L40.1644 2.18409C39.8297 2.52272 39.8297 3.0718 40.1644 3.41051L51.2451 14.621H0.857142C0.383785 14.621 0 15.0093 0 15.4882V17.5116C0 17.9905 0.383785 18.3788 0.857142 18.3788H51.2451L40.1644 29.5894C39.8297 29.928 39.8297 30.4771 40.1644 30.8158L41.5786 32.2466C41.9134 32.5852 42.4561 32.5852 42.7909 32.2466L57.749 17.1132C58.0837 16.7745 58.0837 16.2254 57.749 15.8867L42.7908 0.753299C42.4561 0.41459 41.9134 0.41459 41.5786 0.753299Z"></path>
                 </svg>
             </button>

@@ -410,6 +410,11 @@ const Paginator = function(items) {
     this.cardItems = document.getElementById("card-items");
     this.cardCount = document.getElementById("card-count");
 
+    this.nextButton = document.querySelector("button.pagination-next");
+    this.previousButton = document.querySelector("button.pagination-previous");
+    this.listPages = document.querySelectorAll(".pagination ul li");
+    this.currentPageItem = document.querySelector("li.current");
+
     this.setItems = function (items) {
         this.items = items;
 
@@ -433,7 +438,7 @@ const Paginator = function(items) {
         console.log(items);
 
         let cards = items.map(item => {
-            let services = item.servicecategory.split(",").map(service => `<span>${service}</span>,`);
+            let services = item.servicecategory.split(",").filter(service => service).map(service => `<span>${service}</span>,`).join("");
 
             return `<a href="${item.guid}" class="card boxRadius boxShadow">
                 <div>${services}</div>
@@ -449,13 +454,91 @@ const Paginator = function(items) {
         return this;
     }
 
-    this.renderPages = function() {
+    this.firePageListeners = function() {
+        this.previousButton.addEventListener("click", (e) => {
+            this.gotoPrevious();
+        });
 
+        this.nextButton.addEventListener("click", (e) => {
+            this.gotoNext();
+        });
 
+        // list Items
+        this.listPages.forEach(listPage => {
+            listPage.addEventListener("click", (e) => {
+                this.currentPageItem.classList.remove("current");
+
+                let { target } = e;
+                let  { dataset: { page } } = target;
+                
+                target.classList.add("current");
+                this.currentPageItem = target;
+
+                this.gotoPage(page);
+            });
+
+        });
+    }
+
+    this.updateActivePageItem = function() {
+        this.listPages.forEach(pageItem => {
+            let page = pageItem.getAttribute("data-page");
+
+            if(page == this.currentPage) {
+                pageItem.classList.add("current");
+                this.currentPageItem = pageItem;
+                return pageItem;
+            }
+
+            pageItem.classList.remove("current");
+            return pageItem;
+        });
+    }
+
+    this.toggleBtnDisabledState = function() {
+        if(this.activePage == 0) {
+            this.previousButton.disabled = true;
+        } else {
+            this.previousButton.disabled = false;
+        }
+
+        if(this.currentPage == this.items.length -1) {
+            this.nextButton.disabled = true;
+        } else {
+            this.nextButton.disabled = false;
+        }
+    }
+   
+    this.gotoNext = function() {
+        this.currentPage += 1;
+        this.renderCards();
+        this.updateActivePageItem();
+
+        this.toggleBtnDisabledState();
+
+        return this;
+    }
+
+    this.gotoPrevious = function() {
+        this.currentPage -= 1;
+        this.renderCards();
+        this.updateActivePageItem();
+
+        this.toggleBtnDisabledState();
+
+        return this;
+    }
+
+    this.gotoPage = function(page) {
+        this.currentPage = page;
+
+        this.renderCards();
+        return this;
     }
 }
 
 let paginator = new Paginator([]);
+paginator.firePageListeners();
 
 loadSelectValues(data);
 // markerIcon (first category), multiple filter, 
