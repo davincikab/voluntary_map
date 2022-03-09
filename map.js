@@ -441,7 +441,7 @@ const Paginator = function(items) {
             let services = item.servicecategory.split(",").filter(service => service).map(service => `<span>${service}</span>,`).join("");
 
             return `<a href="${item.guid}" class="card boxRadius boxShadow">
-                <div>${services}</div>
+                <div class="services-section">${services}</div>
             <div class="card-category"></div>
             <div class="card-title h2">${item.post_title}</div>
                     <div class="card-location">Wo? ${item.address}</div>
