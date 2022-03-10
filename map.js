@@ -95,7 +95,7 @@ servicesObj.addTo(map);
 
 // Layer control
 let layerControl = L.control.layers({}, {
-    'Regionen':regions,
+    'Kreisverbände':regions,
     'Angebote':markerCluster
 }, { collapsed:false }).addTo(map)
 
