@@ -279,6 +279,19 @@ function createMarkers(data, type="angebot") {
 
         marker.on('mouseover', function(e) {
             marker.togglePopup();
+
+            let popups = document.querySelectorAll(".popup-link");
+            popups.forEach(popup => {
+                popup.onclick = onLinkClick;
+            });
+
+        });
+
+        marker.on('click', function(e) {
+            let popups = document.querySelectorAll(".popup-link");
+            popups.forEach(popup => {
+                popup.onclick = onLinkClick;
+            });
         });
 
         return marker;
@@ -287,6 +300,15 @@ function createMarkers(data, type="angebot") {
 
     console.log(markerArray.length);
     return markerArray;
+}
+
+function onLinkClick(e) {
+    e.preventDefault();
+    
+    console.log(e.target.dataset);
+    console.log(e.target.href);
+
+    window.open(e.target.href, "_blank");
 }
 
 function getPopupContent(item) {
@@ -313,8 +335,8 @@ function getPopupContent(item) {
                 <div>${item.traeger}</div>
             </div>
 
-            <div class="section-link">
-                <a href="${item.website}" class="btn-link">
+            <div class="section-link" data-href="${item.guid}">
+                <a href="${item.guid}" class="btn-link popup-link">
                     <div class="section-link-inner">Website</div>
                 </a>
             </div>
